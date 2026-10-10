@@ -1,4 +1,4 @@
-// Balmora Crossroads: two guides, one town, forks flagged while you're still upstream of them.
+// Mark & Recall, experiment 01: two guides, one town, forks flagged while you're still upstream of them.
 // Data comes from data.js (tools/build_lab.py). Progress lives in localStorage, per playthrough.
 (() => {
   const LAB = window.LAB;
@@ -96,7 +96,7 @@
     document.getElementById('top').innerHTML = `
       <div class="banner">
         <img class="pinchy" src="pinchy.svg" alt="Pinchy the mudcrab in her purple velvet wizard hat" title="Pinchy, lab assistant">
-        <div class="label">Guide lab · experiment 01</div>
+        <div class="label">Mark &amp; Recall · experiment 01</div>
         <h1>Two Guides Walk Into Balmora</h1>
         <p class="dek">tarvis79 walks Balmora building by building. Karpah walks it guild by guild.
           Neither knows the other exists. The game's own list of people and places introduces them,

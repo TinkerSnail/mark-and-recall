@@ -6,7 +6,9 @@ import json
 import os
 import struct
 
-ESM = "/Users/christina/Dropbox/Mac/Documents/Morrowind/extracted/Data Files/Morrowind.esm"
+# Your Morrowind folder (the one holding extracted/ and morrowmods/). Defaults to this repo's parent.
+MW = os.environ.get("MORROWIND_DIR", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+ESM = os.path.join(MW, "extracted", "Data Files", "Morrowind.esm")
 OUT = os.path.join(os.path.dirname(__file__), "entities.json")
 
 

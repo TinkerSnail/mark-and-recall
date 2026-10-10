@@ -1,6 +1,13 @@
-# Guide Lab, experiment 01: Two Guides Walk Into Balmora
+# Mark & Recall
 
-A proof of concept for the multi-guide Morrowind tracker: load two walkthroughs
+A Morrowind walkthrough tracker that reads more than one guide at once, lines
+them up against the game itself, and flags the big choices while you can still
+make a hard save. Named for the spells: mark the spot before a decision, recall
+to it when you want to try the other road.
+
+## Experiment 01: Two Guides Walk Into Balmora
+
+A proof of concept: load two walkthroughs
 that know nothing about each other, line them up automatically, and flag the
 choices with real consequences while the player is still upstream of them.
 
@@ -40,8 +47,9 @@ python3 tools/make_textures.py  # game textures -> textures/
 python3 tools/build_lab.py      # everything above -> data.js
 ```
 
-The texture and ESM scripts read from your own Morrowind install; the paths are
-constants at the top of each script. Builds are deterministic, so rerunning
+The texture and ESM scripts read from your own Morrowind install. They expect
+this repo to sit inside your Morrowind folder (next to `extracted/` and
+`morrowmods/`); otherwise set `MORROWIND_DIR` to that folder. Builds are deterministic, so rerunning
 gives the same `data.js`.
 
 ## What's not in git

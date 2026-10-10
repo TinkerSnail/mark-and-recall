@@ -12,7 +12,8 @@ import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MW = "/Users/christina/Dropbox/Mac/Documents/Morrowind"
+# Your Morrowind folder (the one holding extracted/ and morrowmods/). Defaults to this repo's parent.
+MW = os.environ.get("MORROWIND_DIR", os.path.dirname(ROOT))
 SEARCH = [
     f"{MW}/morrowmods/Intelligent Textures-47469-2-0-1671912841 (1)/00 Core/textures",
     f"{MW}/extracted/Data Files/Textures",
