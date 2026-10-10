@@ -323,12 +323,28 @@ def flatten(text):
     return re.sub(r"[ \t]{2,}", " ", text)
 
 
-def stance(full, fork, karpah_units):
+def chapter_finder(raw):
+    """Name the chapter a position falls in: tarvis79's {WLK###} sections or Karpah's [n.n] headers."""
+    toc = {i: t.strip() for t, i in re.findall(r"\n([^\n{]+?)\s*\{(WLK\d{3})\}", raw[:20000])}
+    marks = re.compile(r"\{(WLK\d{3})\}|\[(\d+\.\d+)\]\s+([^\[\]]+?)\s(?:-{3}|=-=)")
+
+    def at(flat, idx):
+        last = None
+        for last in marks.finditer(flat, 0, idx):
+            pass
+        if not last:
+            return ""
+        return toc.get(last.group(1), "") if last.group(1) else last.group(3).strip()
+    return at
+
+
+def stance(raw, fork, karpah_units):
     """For one guide's full text, classify each branch: takes / documents / avoids / silent."""
-    full = flatten(full)
+    at = chapter_finder(raw)
+    full = flatten(raw)
     res = {}
     for br in fork["branches"]:
-        pos, neg, quote, note, peeks = 0, 0, "", "", []
+        pos, neg, quote, note, peeks, where = 0, 0, "", "", [], ""
         if "house" in br:
             for m in re.finditer(r"\bjoin\w*\b[^.]{0,40}?House\s+" + br["house"], full):
                 sent = sentence_at(full, m.start())
@@ -338,6 +354,7 @@ def stance(full, fork, karpah_units):
                 else:
                     pos += 1
                     quote = sent if not quote or neg else quote
+                    where = where or at(full, m.start())
             hdr = len(re.findall(r"\n-{6,} House " + br["house"] + r" - ", full))
             if hdr:
                 pos += hdr
@@ -349,10 +366,11 @@ def stance(full, fork, karpah_units):
                 peeks.append(paragraph_at(full, qm.start()))
             for m in re.finditer(br["evidence"], full):
                 pos += 1
+                where = where or at(full, m.start())
                 para = paragraph_at(full, m.start())
                 if len(peeks) < 2 and len(para) > 160 and not para.startswith("***") and para not in peeks:
                     peeks.append(para)
-        res[br["id"]] = {"pos": pos, "neg": neg, "quote": quote, "note": note, "peeks": peeks}
+        res[br["id"]] = {"pos": pos, "neg": neg, "quote": quote, "note": note, "peeks": peeks, "where": where}
     takers = [b for b, r in res.items() if r["pos"] and not r["neg"]]
     out = {}
     for b, r in res.items():
@@ -364,7 +382,7 @@ def stance(full, fork, karpah_units):
             st = "documents"
         else:
             st = "silent"
-        out[b] = {"status": st, "quote": r["quote"][:320], "note": r["note"], "peeks": r["peeks"]}
+        out[b] = {"status": st, "quote": r["quote"][:320], "note": r["note"], "peeks": r["peeks"], "where": r["where"]}
     return out
 
 

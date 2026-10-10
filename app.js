@@ -134,6 +134,10 @@
     });
     document.getElementById('bar').innerHTML = `
       <div class="wrap">
+        <span class="seg views" role="tablist" aria-label="View">
+          <button role="tab" data-act="view" data-v="walk" aria-pressed="${S.view !== 'time'}" aria-selected="${S.view !== 'time'}">Walkthrough</button>
+          <button role="tab" data-act="view" data-v="time" aria-pressed="${S.view === 'time'}" aria-selected="${S.view === 'time'}">Timeline</button>
+        </span>
         <span class="label">Lead guide</span>
         <span class="seg">
           <button data-act="lead" data-g="tarvis" style="${cvar('tarvis')}" aria-pressed="${S.lead === 'tarvis'}">tarvis79</button>
@@ -279,6 +283,7 @@
   }
 
   function renderMain() {
+    if (S.view === 'time') return renderTimeline();
     const g = S.lead, o = other(g), units = leadUnits(), slots = forkSlots(units);
     let html = `
       <div class="colheads">
@@ -327,6 +332,340 @@
         Karpah's guide is for personal use, so this lab stays on your machine. Game data © Bethesda Softworks.</p>`;
   }
 
+  // ---------------------------------------------------------------- timeline: the guides as written
+  // Each guide is a strip in its own reading order; a piece's width is how much the guide
+  // writes about it. Lines join pieces that cover the same ground, so crossings are the same
+  // ground covered in a different order. Colors validated against the plot wash (#e6dab9).
+
+  const TL = { tarvis: '#573a98', karpah: '#00806b', fork: '#962f1b', ink: '#2b1d10', wash: '#e6dab9' };
+  const wordsIn = u => u.steps.reduce((n, p) => n + p.split(/\s+/).filter(Boolean).length, 0);
+  const isDone = u => u.steps.length > 0 && doneIn(u) === u.steps.length;
+
+  function laneUnits(g) {
+    const us = G[g].units.slice();
+    if (g === 'karpah') {
+      const key = u => [...u.section.split('.').map(Number), +u.id.split('-')[1]];
+      us.sort((a, b) => { const x = key(a), y = key(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
+    }
+    return us;
+  }
+
+  // Progress in one guide counts in the other only for the same quest. Meeting a
+  // quest-giver isn't the same as doing all of their quests.
+  function covered(v) {
+    return (linksOf[v.id] || []).some(l => unit[l.id].guide !== v.guide && l.sameQuest.length && isDone(unit[l.id]));
+  }
+
+  function decisionBranch(v) {
+    for (const f of LAB.forks) for (const b of f.branches) {
+      if (b.evidence && v.fullTitle && new RegExp(b.evidence).test(v.fullTitle)) return { f, b };
+    }
+    return null;
+  }
+
+  function renderTimeline() {
+    const app = document.getElementById('app');
+    const lanes = { tarvis: laneUnits('tarvis'), karpah: laneUnits('karpah') };
+    const showSel = ['tarvis', 'karpah'].includes(S.tlShow) ? S.tlShow : 'both';
+    const shown = showSel === 'both' ? ['tarvis', 'karpah'] : [showSel];
+    const both = shown.length === 2;
+    const cs = getComputedStyle(app);
+    const avail = app.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 36; // card padding
+    const zoom = Math.min(8, Math.max(1, +S.tlZoom || 1));
+    // guide names live in a sticky HTML column, so they stay put while a zoomed chart scrolls
+    const LANEW = avail < 640 ? 118 : 190;
+    const L = 12, R = 96, H = 18;
+    const plotW = Math.round(Math.max(560, avail - LANEW - L - R) * zoom);
+    const W = L + plotW + R;
+    // tarvis79's stop names sit above its strip, Karpah's chapter names below hers
+    const Y = both ? { tarvis: 150, karpah: 330 } : showSel === 'tarvis' ? { tarvis: 150 } : { karpah: 84 };
+    const SVGH = both ? 530 : showSel === 'tarvis' ? 300 : 290;
+
+    // lay each lane out across the full plot width, proportional to text length
+    const pos = {};
+    for (const g of shown) {
+      const us = lanes[g];
+      const len = us.map(u => Math.max(40, u.steps.join(' ').length));
+      const gaps = us.map((u, i) => (i === 0 ? 0 : g === 'karpah' && u.section !== us[i - 1].section ? 8 : 2));
+      const k = (plotW - gaps.reduce((a, b) => a + b, 0)) / len.reduce((a, b) => a + b, 0);
+      let x = L;
+      us.forEach((u, i) => { x += gaps[i]; const w = Math.max(3, len[i] * k); pos[u.id] = { x, w, cx: x + w / 2 }; x += w; });
+    }
+
+    const out = [];
+    // links first, so pieces sit on top (they need both strips)
+    if (both) for (const l of LAB.links) {
+      const a = pos[l.a], b = pos[l.b];
+      if (!a || !b) continue;
+      const y1 = Y.tarvis + H, y2 = Y.karpah, ym = (y1 + y2) / 2;
+      const strong = l.sameQuest.length || l.giver;
+      out.push(`<path class="link${strong ? ' strong' : ''}" data-a="${l.a}" data-b="${l.b}" d="M${a.cx.toFixed(1)} ${y1} C${a.cx.toFixed(1)} ${ym} ${b.cx.toFixed(1)} ${ym} ${b.cx.toFixed(1)} ${y2}"/>`);
+    }
+
+    // lane labels: HTML, pinned to the left edge of the scroller
+    const laneHtml = shown.map(g => {
+      const words = lanes[g].reduce((n, u) => n + wordsIn(u), 0);
+      return `<div class="lane" style="top:${Y[g] + 1}px">
+        <div class="lane-name"><i style="background:${TL[g]}"></i>${esc(G[g].name)}</div>
+        <div class="lane-sub">${esc(G[g].shape)} · ${words.toLocaleString()} words</div>
+        ${S.lead === g ? '<div class="lane-lead">you\'re following this one</div>' : ''}
+      </div>`;
+    }).join('');
+
+    // pieces
+    for (const g of shown) {
+      for (const u of lanes[g]) {
+        const p = pos[u.id], done = isDone(u), cov = !done && covered(u);
+        const op = done || cov ? 1 : u.downstream ? 0.2 : 0.32;
+        const dec = g === 'karpah' && u.downstream ? decisionBranch(u) : null;
+        const label = `${G[g].name}: ${u.title}. ${done ? 'Done' : cov ? 'Covered by your progress in the other guide' : 'Not done yet'}.`;
+        out.push(`<g class="piece" tabindex="0" role="button" data-id="${u.id}" aria-label="${esc(label)}">
+          <rect class="hit" x="${p.x - 1}" y="${Y[g] - 6}" width="${p.w + 2}" height="${H + 12}"/>
+          <rect class="mark" x="${p.x.toFixed(1)}" y="${Y[g]}" width="${p.w.toFixed(1)}" height="${H}" rx="2" fill="${TL[g]}" fill-opacity="${op}"/>
+          ${dec ? `<rect x="${(p.x - 2).toFixed(1)}" y="${Y[g] - 2}" width="${(p.w + 4).toFixed(1)}" height="${H + 4}" rx="3" fill="none" stroke="${TL.fork}" stroke-width="2"/>` : ''}
+        </g>`);
+      }
+    }
+
+    // tarvis79: stop names above the strip, nudged apart so they never stack
+    let lastX = -99;
+    if (Y.tarvis != null) for (const u of lanes.tarvis) {
+      const p = pos[u.id];
+      const lx = Math.max(p.cx, lastX + 15);
+      lastX = lx;
+      const name = u.title.length > 26 ? u.title.slice(0, 25) + '…' : u.title;
+      if (lx - p.cx > 1) out.push(`<path class="leader" d="M${p.cx.toFixed(1)} ${Y.tarvis - 3} L${lx.toFixed(1)} ${Y.tarvis - 9}"/>`);
+      out.push(`<text class="tick" transform="translate(${lx.toFixed(1)} ${Y.tarvis - 11}) rotate(-52)">${esc(name)}</text>`);
+    }
+
+    // Karpah: chapter brackets below the strip
+    if (Y.karpah != null) {
+      lastX = -99;
+      const chapters = [];
+      for (const u of lanes.karpah) {
+        const c = chapters[chapters.length - 1];
+        if (c && c.section === u.section) c.x1 = pos[u.id].x + pos[u.id].w;
+        else chapters.push({ section: u.section, x0: pos[u.id].x, x1: pos[u.id].x + pos[u.id].w, u });
+      }
+      const yb = Y.karpah + H + 7;
+      for (const c of chapters) out.push(`<path class="bracket" d="M${c.x0.toFixed(1)} ${yb - 3} V${yb} H${c.x1.toFixed(1)} V${yb - 3}"/>`);
+      // zoomed out: one name per chapter. Zoomed in (2x+): every quest gets its own name.
+      const tags = zoom >= 2
+        ? lanes.karpah.map(u => ({ x: pos[u.id].cx, text: u.title, later: u.downstream }))
+        : chapters.map(c => ({ x: (c.x0 + c.x1) / 2, text: (c.u.giver || c.u.group.replace(/^\[[\d.]+\]\s*/, '')) + (c.u.downstream ? ' (after Balmora)' : ''), later: c.u.downstream }));
+      for (const t of tags) {
+        const lx = Math.max(t.x, lastX + 15);
+        lastX = lx;
+        const text = t.text.length > 30 ? t.text.slice(0, 29) + '…' : t.text;
+        out.push(`<text class="tick${t.later ? ' later' : ''}" transform="translate(${lx.toFixed(1)} ${yb + 12}) rotate(52)">${esc(text)}</text>`);
+      }
+    }
+
+    // fork gates: where each guide reaches the fork; joined across the strips when both show
+    const notes = [];
+    for (const f of LAB.forks) {
+      const gate = {};
+      for (const g of shown) {
+        const us = lanes[g].filter(u => !u.downstream);
+        let i = us.findIndex(u => f.anchor.includes(u.giver));
+        if (i < 0) i = us.findIndex(u => f.anchor.some(a => u.npcs.slice(0, 4).includes(a)));
+        if (i >= 0) gate[g] = pos[us[i].id].x - 2;
+      }
+      if (both && gate.tarvis != null && gate.karpah != null) {
+        const t1 = Y.tarvis + H + 12, k1 = Y.karpah - 12, ym = (t1 + k1) / 2;
+        out.push(`<path class="gate" d="M${gate.tarvis.toFixed(1)} ${Y.tarvis - 6} V${t1}"/>`,
+          `<path class="gate" d="M${gate.karpah.toFixed(1)} ${k1} V${Y.karpah + H + 4}"/>`,
+          `<path class="gate-link" d="M${gate.tarvis.toFixed(1)} ${t1} C${gate.tarvis.toFixed(1)} ${ym} ${gate.karpah.toFixed(1)} ${ym} ${gate.karpah.toFixed(1)} ${k1}"/>`,
+          `<text class="gate-label" x="${((gate.tarvis + gate.karpah) / 2).toFixed(1)}" y="${ym + 4}" text-anchor="middle">⑂ ${esc(f.title)}</text>`);
+      } else if (!both && gate[showSel] != null) {
+        // one strip: the gate runs past the pin row to its own label row
+        const x = gate[showSel], y = Y[showSel];
+        const [y0, y1, ly] = showSel === 'tarvis' ? [y - 6, y + H + 44, y + H + 58] : [y - 44, y + H + 4, y - 50];
+        out.push(`<path class="gate" d="M${x.toFixed(1)} ${y0} V${y1}"/>`,
+          `<text class="gate-label" x="${(x + 4).toFixed(1)}" y="${ly}">⑂ ${esc(f.title)}</text>`);
+      }
+      // where does tarvis79 actually commit? (found by the build, from his full text)
+      const took = f.branches.find(b => f.stances.tarvis[b.id].status === 'takes');
+      const where = took && f.stances.tarvis[took.id].where;
+      if (Y.tarvis != null && where && where !== 'Balmora & Wilderness') notes.push(`⑂ ${f.title}: tarvis79 commits to ${took.label} later, in “${where}” →`);
+    }
+    const noteY = both ? Y.tarvis + H + 44 : (Y.tarvis || 0) + H + 84;
+    notes.forEach((n, i) => out.push(`<text class="gate-note" x="${L + plotW}" y="${noteY + i * 19}" text-anchor="end">${esc(n)}</text>`));
+
+    // You are here: first unfinished piece in the guide you're following,
+    // and the matching spot in the other guide
+    const lead = S.lead, oth = other(lead);
+    const leadList = lanes[lead].filter(u => !u.downstream);
+    let hi = leadList.findIndex(u => !isDone(u));
+    const anyDone = leadList.some(isDone);
+    let match = null;
+    for (let i = hi < 0 ? leadList.length - 1 : hi; i >= 0 && !match; i--) {
+      const ls = (linksOf[leadList[i].id] || []).filter(l => unit[l.id].guide === oth);
+      if (ls.length) match = ls[0].id;
+    }
+    const pin = (g, x, solid, text) => {
+      const below = g === 'tarvis';
+      const tip = below ? Y[g] + H + 2 : Y[g] - 2, body = below ? tip + 17 : tip - 17;
+      const anchor = x > L + plotW - 170 ? 'end' : 'start';
+      const tx = anchor === 'end' ? x - 12 : x + 12;
+      return `<g class="pin">
+        <path d="M${x.toFixed(1)} ${tip} L${(x - 5).toFixed(1)} ${(body + (below ? -4 : 4)).toFixed(1)} L${(x + 5).toFixed(1)} ${(body + (below ? -4 : 4)).toFixed(1)} Z" fill="${TL.ink}"/>
+        <circle cx="${x.toFixed(1)}" cy="${body}" r="7" fill="${solid ? TL.ink : TL.wash}" stroke="${TL.ink}" stroke-width="2"/>
+        ${solid ? `<circle cx="${x.toFixed(1)}" cy="${body}" r="2.5" fill="#e9c457"/>` : ''}
+        <text class="pin-label" x="${tx.toFixed(1)}" y="${body + 5}" text-anchor="${anchor}">${esc(text)}</text>
+      </g>`;
+    };
+    if (pos[leadList[0].id]) {
+      const last = pos[leadList[leadList.length - 1].id];
+      const hereX = hi < 0 ? last.x + last.w : pos[leadList[hi].id].x;
+      out.push(pin(lead, hereX, true, hi < 0 ? 'You are here: Balmora done!' : anyDone ? 'You are here' : 'You are here: just off the boat'));
+    }
+    if (match && pos[match]) out.push(pin(oth, pos[match].cx, false, both ? `≈ here in ${G[oth].name}` : `≈ you are here (following ${G[lead].name})`));
+
+    const leadName = esc(G[lead].name), othName = esc(G[oth].name);
+    const rows = shown.map(g => lanes[g].map((u, i) => {
+      const done = isDone(u), cov = !done && covered(u);
+      const nl = (linksOf[u.id] || []).filter(l => unit[l.id].guide !== g).length;
+      return `<tr><td><span class="sw" style="background:${TL[g]}"></span>${esc(G[g].name)}</td><td>${i + 1}</td>
+        <td>${esc(g === 'tarvis' ? u.group : u.group.replace(/^\[([\d.]+)\].*/, '§$1'))}</td><td>${esc(u.title)}${u.downstream ? ' <i>(after Balmora)</i>' : ''}</td>
+        <td class="num">${wordsIn(u).toLocaleString()}</td><td class="num">${nl}</td>
+        <td>${done ? 'Done' : cov ? 'Covered' : '—'}</td></tr>`;
+    }).join('')).join('');
+
+    const dek = both
+      ? `Each strip is one guide in its own reading order, and each piece is as wide as the
+         guide's write-up of it. Lines join pieces about the same people and places, so <b>where lines
+         cross, the guides cover the same ground in a different order</b>. You're following ${leadName};
+         the hollow pin is the matching spot in ${othName}.`
+      : `${esc(G[showSel].name)} on its own, in reading order. Each piece is as wide as the guide's
+         write-up of it. Show both guides to see how it lines up with ${esc(G[other(showSel)].name)}.`;
+    const fbtn = (v, text, c) => `<button data-act="tlshow" data-v="${v}" style="--c: ${c}" aria-pressed="${showSel === v}">${text}</button>`;
+
+    app.innerHTML = `
+      <section class="card timeline" style="--c: var(--tarvis)">
+        <div class="label">Timeline</div>
+        <h3>The guides, as written</h3>
+        <p class="tl-dek">${dek}</p>
+        <div class="tl-filter">
+          <span class="label">Show</span>
+          <span class="seg" role="group" aria-label="Show">
+            ${fbtn('both', 'Both guides', 'var(--trim)')}${fbtn('tarvis', 'tarvis79', TL.tarvis)}${fbtn('karpah', 'Karpah', TL.karpah)}
+          </span>
+          <span class="label">Zoom</span>
+          <span class="seg zoom" role="group" aria-label="Zoom">
+            <button data-act="tlzoom" data-z="out" aria-label="Zoom out" ${zoom <= 1 ? 'disabled' : ''}>−</button>
+            <button data-act="tlzoom" data-z="fit" aria-label="Fit to width">${zoom === 1 ? 'Fit' : `${+zoom.toFixed(2)}×`}</button>
+            <button data-act="tlzoom" data-z="in" aria-label="Zoom in" ${zoom >= 8 ? 'disabled' : ''}>+</button>
+          </span>
+          <span class="tl-hint">or pinch / ⌘-scroll on the chart${zoom < 2 ? ' · zoom to 2× to name every quest' : ''}</span>
+        </div>
+        <div class="tl-legend" aria-hidden="true">
+          ${shown.includes('tarvis') ? `<span><i class="key sw" style="background:${TL.tarvis}"></i>tarvis79</span>` : ''}
+          ${shown.includes('karpah') ? `<span><i class="key sw" style="background:${TL.karpah}"></i>Karpah</span>` : ''}
+          <span><i class="key sw faded" style="background:${TL.ink}"></i>pale = not done yet</span>
+          ${both ? '<span><i class="key line"></i>same people or places</span><span><i class="key line strong"></i>same quest</span>' : ''}
+          <span><i class="key gate"></i>fork ahead</span>
+          ${shown.includes('karpah') ? '<span><i class="key ring"></i>where a fork is decided</span>' : ''}
+        </div>
+        <div class="tl-scroll" data-plotw="${plotW}" data-lanew="${LANEW}" data-l="${L}">
+          <div class="tl-inner" style="grid-template-columns: ${LANEW}px ${W}px">
+          <div class="tl-lanes" style="height:${SVGH}px">${laneHtml}</div>
+          <svg width="${W}" height="${SVGH}" viewBox="0 0 ${W} ${SVGH}" role="img" aria-label="Timeline of ${both ? 'both guides with links' : esc(G[showSel].name)}, forks and your position">
+            ${out.join('')}
+          </svg>
+          </div>
+          <div class="tl-tip" role="tooltip" hidden></div>
+        </div>
+        <details class="tl-table"><summary>Show as a table</summary>
+          <table>
+            <thead><tr><th>Guide</th><th>#</th><th>Where</th><th>Piece</th><th class="num">Words</th><th class="num">Links</th><th>Status</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </details>
+      </section>`;
+    wireTimeline(pos, Y);
+  }
+
+  function wireTimeline(pos, Y) {
+    const box = document.querySelector('.tl-scroll');
+    const tip = box.querySelector('.tl-tip');
+    const show = (g, evt) => {
+      const u = unit[g.dataset.id];
+      const done = isDone(u), cov = !done && covered(u);
+      const links = (linksOf[u.id] || []).filter(l => unit[l.id].guide !== u.guide);
+      const dec = u.downstream ? decisionBranch(u) : null;
+      tip.replaceChildren();
+      const line = (text, cls) => { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = text; tip.appendChild(d); };
+      line(u.title, 'tt-title');
+      line(`${G[u.guide].name} · ${u.guide === 'tarvis' ? u.group : u.group.replace(/^\[[\d.]+\]\s*/, '')}`, 'tt-sub');
+      line(`${wordsIn(u).toLocaleString()} words · ${u.steps.length} step${u.steps.length === 1 ? '' : 's'}`);
+      line(done ? 'Done' : cov ? `Covered by your progress in ${G[other(u.guide)].name}` : u.downstream ? 'After Balmora' : 'Not done yet');
+      if (dec) line(`⑂ ${dec.f.title}: ${dec.b.label} is decided here`, 'tt-fork');
+      line(links.length ? `Linked to ${links.length} in ${G[other(u.guide)].name}` : `Nothing matching in ${G[other(u.guide)].name}`, 'tt-sub');
+      document.querySelectorAll('.link').forEach(p => p.classList.toggle('hot', p.dataset.a === u.id || p.dataset.b === u.id));
+      document.querySelectorAll('.piece').forEach(s => s.classList.toggle('mate', links.some(l => l.id === s.dataset.id)));
+      tip.hidden = false;
+      const r = box.getBoundingClientRect(), p = pos[u.id];
+      const segY = Y[u.guide];
+      let x = (evt && evt.clientX ? evt.clientX - r.left + box.scrollLeft : p.cx + +box.dataset.lanew) + 14;
+      x = Math.min(x, box.scrollLeft + box.clientWidth - tip.offsetWidth - 8);
+      tip.style.left = `${Math.max(box.scrollLeft + 8, x)}px`;
+      tip.style.top = `${u.guide === 'tarvis' ? segY + 34 : segY - tip.offsetHeight - 14}px`;
+    };
+    const hide = () => {
+      tip.hidden = true;
+      document.querySelectorAll('.link.hot').forEach(p => p.classList.remove('hot'));
+      document.querySelectorAll('.piece.mate').forEach(s => s.classList.remove('mate'));
+    };
+    box.addEventListener('wheel', e => {
+      if (!(e.ctrlKey || e.metaKey)) return; // trackpad pinch arrives as ctrl+wheel
+      e.preventDefault();
+      setZoom((+S.tlZoom || 1) * Math.exp(-e.deltaY * 0.01), e.clientX);
+    }, { passive: false });
+    box.querySelectorAll('.piece').forEach(g => {
+      g.addEventListener('pointermove', e => show(g, e));
+      g.addEventListener('pointerleave', hide);
+      g.addEventListener('focus', () => show(g));
+      g.addEventListener('blur', hide);
+      const go = () => openInWalkthrough(unit[g.dataset.id]);
+      g.addEventListener('click', go);
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+  }
+
+  // Zoom keeps the spot under the pointer (or the middle of the view) where it was.
+  function setZoom(z, clientX) {
+    const box = document.querySelector('.tl-scroll');
+    const cur = Math.min(8, Math.max(1, +S.tlZoom || 1));
+    z = Math.min(8, Math.max(1, Math.round(z * 4) / 4));
+    if (!box || z === cur) return;
+    const r = box.getBoundingClientRect();
+    const px = clientX != null ? clientX - r.left : box.clientWidth / 2;
+    const lead = +box.dataset.lanew + +box.dataset.l;
+    const frac = (box.scrollLeft + px - lead) / +box.dataset.plotw;
+    S.tlZoom = z;
+    save();
+    renderMain();
+    const nb = document.querySelector('.tl-scroll');
+    nb.scrollLeft = Math.max(0, frac * +nb.dataset.plotw + lead - px);
+  }
+
+  function openInWalkthrough(u) {
+    S.view = 'walk';
+    let target = `u-${u.id}`;
+    if (u.downstream) {
+      const dec = decisionBranch(u);
+      S.lead = S.lead || 'tarvis';
+      if (dec) { open.add('p:' + dec.f.id); target = `f-${dec.f.id}`; }
+    } else {
+      S.lead = u.guide;
+    }
+    save();
+    render();
+    // instant: we just swapped views, so a long smooth scroll from the top would only be a delay
+    document.getElementById(target)?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
+
   function render() {
     applyTheme();
     renderTop();
@@ -371,7 +710,13 @@
     const el = e.target.closest('[data-act]');
     if (!el) return;
     const a = el.dataset.act;
-    if (a === 'lead') { S.lead = el.dataset.g; save(); render(); window.scrollTo({ top: 0 }); }
+    if (a === 'tlshow') { S.tlShow = el.dataset.v; save(); renderMain(); }
+    else if (a === 'tlzoom') {
+      const z = +S.tlZoom || 1;
+      setZoom(el.dataset.z === 'in' ? z * 1.5 : el.dataset.z === 'out' ? z / 1.5 : 1);
+    }
+    else if (a === 'view') { S.view = el.dataset.v; save(); render(); window.scrollTo({ top: 0 }); }
+    else if (a === 'lead') { S.lead = el.dataset.g; save(); render(); window.scrollTo({ top: 0 }); }
     else if (a === 'steps') { toggle('s:' + el.dataset.id); }
     else if (a === 'links') { toggle('l:' + el.dataset.id); }
     else if (a === 'mini') { toggle(el.dataset.key); }
@@ -379,7 +724,10 @@
     else if (a === 'fork') { forkTo(el.dataset.f, el.dataset.b); }
     else if (a === 'commit') { P().choices[el.dataset.f] = el.dataset.b; save(); render(); }
     else if (a === 'uncommit') { delete P().choices[el.dataset.f]; save(); render(); }
-    else if (a === 'jump') { document.getElementById(el.dataset.to)?.scrollIntoView({ block: 'start' }); }
+    else if (a === 'jump') {
+      if (S.view === 'time') { S.view = 'walk'; save(); render(); }
+      document.getElementById(el.dataset.to)?.scrollIntoView({ block: 'start' });
+    }
     else if (a === 'copy') {
       const txt = el.dataset.text;
       Promise.resolve(navigator.clipboard?.writeText(txt)).then(() => toast(`Copied "${txt}"`), () => toast(txt));
@@ -428,6 +776,12 @@
   });
   document.addEventListener('mouseout', e => {
     if (e.target.closest('.chip[data-ent]')) document.querySelectorAll('.chip.hot').forEach(x => x.classList.remove('hot'));
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (S.view === 'time') renderMain(); }, 150);
   });
 
   render();
