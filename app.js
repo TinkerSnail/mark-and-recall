@@ -45,6 +45,12 @@
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const cvar = g => `--c: var(--${g}); --cbg: var(--${g}-bg);`;
+
+  // Dunmer brush glyphs lifted from the game's town banners (tools/make_textures.py)
+  const GLYPHS = ['vos', 'hla-oad', 'khull', 'sadrith-mora', 'gnaar-mok', 'ald-velothi', 'tel-aruhn', 'tel-vos'];
+  const FORK_GLYPH = { 'guild-war': 'vos', 'great-house': 'hla-oad' };
+  const glyphFor = id => GLYPHS[[...id].reduce((n, c) => n + c.charCodeAt(0), 0) % GLYPHS.length];
+  const glyphCol = name => `textures/glyphs/col-${name}.webp`;
   const leadUnits = () => G[S.lead].units.filter(u => !u.downstream);
   const doneIn = u => u.steps.reduce((n, _, i) => n + (P().checks[`${u.id}:${i}`] ? 1 : 0), 0);
   const clip = (s, n) => (s.length > n ? s.slice(0, s.lastIndexOf(' ', n)) + '…' : s);
@@ -165,7 +171,7 @@
       ? u.quests.map(q => `<span class="chip q" title="Quest">${esc(q.replace(/\s*-\s*/, ' · '))}</span>`).join('')
       : '';
     const joins = (u.factions || []).map(f => `<span class="chip q" title="Joins / ranks up here">✦ ${esc(f.replace(/\s*-\s*/, ' · '))}</span>`).join('');
-    const rep = u.rep ? `<p class="mini rep" style="border:0;padding:0;background:none">${esc(u.rep)}</p>` : '';
+    const rep = u.rep ? `<p class="rep-line">${esc(u.rep)}</p>` : '';
     const steps = u.steps.slice(0, lim).map((p, i) => {
       const id = `${u.id}:${i}`, on = !!P().checks[id];
       return `<li class="${on ? 'checked' : ''}"><input type="checkbox" data-step="${id}" ${on ? 'checked' : ''} aria-label="Done"><p>${esc(p)}</p></li>`;
@@ -173,6 +179,7 @@
     const more = n > 2 ? `<button class="more" data-act="steps" data-id="${u.id}">${all ? 'Show fewer' : `Show all ${n} steps`}</button>` : '';
     return `
       <article class="card" style="${cvar(g)}">
+        <i class="card-glyph" aria-hidden="true" style="background-image:url(${glyphCol(glyphFor(u.id))})"></i>
         <span class="prog${d === n && n ? ' full' : ''}">${d}/${n}</span>
         <div class="label">${kicker}</div>
         <h3>${esc(u.title)}</h3>
@@ -245,6 +252,7 @@
            ${chosen ? '' : `<button class="go commit" data-act="commit" data-f="${f.id}" data-b="${b.id}">Commit this one</button>`}`;
       return `
         <div class="branch${chosen === b.id ? ' chosen' : chosen ? ' dim' : ''}">
+          ${b.house ? `<img class="emblem" src="textures/glyphs/house-${b.house.toLowerCase()}.webp" alt="" aria-hidden="true">` : ''}
           <h4>${esc(b.label)}</h4>
           <p class="cost">${esc(b.cost)}</p>
           ${b.keeps ? `<p class="keeps">${esc(b.keeps)}</p>` : ''}
@@ -267,6 +275,7 @@
     const hasPeeks = f.branches.some(b => ['tarvis', 'karpah'].some(g => f.stances[g][b.id].peeks.length));
     return `
       <section class="fork" id="f-${f.id}">
+        <i class="fork-glyph" aria-hidden="true" style="background-image:url(${glyphCol(FORK_GLYPH[f.id] || glyphFor(f.id))})"></i>
         <div class="flag"><span class="label">⑂ Fork ahead</span>${status}</div>
         <h3>${esc(f.title)}</h3>
         <p class="qn">${esc(f.question)}</p>
@@ -549,6 +558,7 @@
 
     app.innerHTML = `
       <section class="card timeline" style="--c: var(--tarvis)">
+        <i class="card-glyph tl-glyph" aria-hidden="true" style="background-image:url(${glyphCol('tel-vos')})"></i>
         <div class="label">Timeline</div>
         <h3>The guides, as written</h3>
         <p class="tl-dek">${dek}</p>

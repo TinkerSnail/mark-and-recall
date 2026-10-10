@@ -82,9 +82,13 @@ the built lab anywhere public.
 | `scroll-v.webp` / `scroll-h.webp` | `scroll.dds` (the reading scroll), upright and sideways | fork cards and the masthead (CSS `border-image`, so the rolled ends never stretch) |
 | `fiber.jpg` | `Tx_parchment_03` | the page backdrop |
 | `trim.png` | `menu_head_block_middle` (the bronze menu title bar) | the sticky bar's edge and the chapter dividers |
+| `glyphs/col-*.webp` | eight Dunmer town banners (`Tx_de_banner_Vos`, `_Hla_Oad`, ...): the brush glyphs lifted off the cloth in their own red, black and ochre | a faint marginal glyph on every journal page, and a faded column down each fork scroll |
+| `glyphs/house-*.webp` | the House symbols carved on the Vivec canton signs (`Tx_V_Sign_hlaalu_01`, ...) | the three roads of the One House Only fork |
+| `glyphs/velothi.webp` | `Tx_Velothi_Glyph00` | the mark on each of Karpah's chapter dividers |
 
 They are Bethesda's art, which is one more reason this lab stays local.
-`tools/make_textures.py` rebuilds all of them.
+`tools/make_textures.py` rebuilds all of them (the glyph cutouts also need
+ImageMagick, for its connected-components speck filter).
 
 Pinchy appears twice. `pinchy.svg` is a hand-drawn ink-and-watercolor version
 of her in the purple velvet hat (gold band, buckle, glowing sky-blue gem, all

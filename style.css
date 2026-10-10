@@ -522,3 +522,38 @@ details.tl-table summary { font-family: Cinzel, Georgia, serif; font-size: 15px;
   .tl-lanes .lane-name { font-size: 13px; }
   .tl-lanes .lane-sub, .tl-lanes .lane-lead { font-size: 12px; }
 }
+
+/* ------------------------------------------------------------ Dunmer ink glyphs (from the game's banners and canton signs) */
+
+.card, .fork { position: relative; }
+.card-glyph, .fork > .fork-glyph {
+  position: absolute; pointer-events: none; display: block;
+  background: no-repeat center / contain;
+  mix-blend-mode: multiply;
+}
+/* a faint marginal glyph on each journal page, tucked into the lower corner */
+.card-glyph { right: 10px; bottom: 8px; width: 74px; height: 118px; opacity: 0.2; }
+.card > *:not(.card-glyph) { position: relative; }
+.timeline .tl-glyph { top: 10px; bottom: auto; right: 18px; width: 70px; height: 112px; opacity: 0.16; }
+
+/* a big faded column of glyphs down the right of each fork scroll, behind the words */
+.fork > .fork-glyph { right: 1%; top: 2%; width: 24%; height: 96%; opacity: 0.22; background-position: right center; }
+
+/* the House symbols from the Vivec canton signs, on the three One House Only roads */
+.branch { position: relative; }
+.branch .emblem {
+  position: absolute; top: 8px; right: 10px; width: 54px; height: 54px; object-fit: contain;
+  opacity: 0.82; mix-blend-mode: multiply; pointer-events: none;
+}
+.branch:has(.emblem) h4, .branch:has(.emblem) .cost { padding-right: 58px; }
+
+/* the Velothi glyph marks each of Karpah's chapters (light ink on the dark desk, dark ink on the light one) */
+.divider::before {
+  content: ""; flex: none; width: 20px; height: 22px;
+  background: url("textures/glyphs/velothi.webp") no-repeat center / contain;
+  filter: invert(0.88) sepia(0.7) saturate(1.4) brightness(0.95);
+  opacity: 0.85;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .divider::before { filter: none; } }
+:root[data-theme="light"] .divider::before { filter: none; }
+.rep-line { margin: 0 0 8px; font-size: 14px; color: var(--faint); font-style: italic; }
