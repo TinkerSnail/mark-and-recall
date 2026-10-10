@@ -1,0 +1,15 @@
+# Guide text: Karpah's guide is personal-use only. Rebuild with tools/fetch_guides.py
+source/
+
+# Generated (embeds guide text / game data). Rebuild with tools/esm_entities.py + tools/build_lab.py
+data.js
+tools/entities.json
+
+# Bethesda's art from your own install. Rebuild with tools/make_textures.py
+textures/*
+!textures/pinchy-field.jpg
+
+# Python + macOS noise
+__pycache__/
+*.pyc
+.DS_Store

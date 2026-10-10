@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4 160 136" role="img" aria-label="Pinchy the mudcrab in her purple velvet wizard hat">
+  <style>
+    .ink { stroke: #2b1d10; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+    .gem-glow { animation: twinkle 3.2s ease-in-out infinite; transform-origin: 90px 11px; }
+    .spark { animation: twinkle 3.2s ease-in-out infinite; }
+    .spark.b { animation-delay: 1.6s; }
+    @keyframes twinkle { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.12); } }
+    @media (prefers-reduced-motion: reduce) { .gem-glow, .spark { animation: none; } }
+  </style>
+  <defs>
+    <radialGradient id="shell" cx="42%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#8d7559"/>
+      <stop offset=".5" stop-color="#604b37"/>
+      <stop offset="1" stop-color="#33281d"/>
+    </radialGradient>
+    <linearGradient id="leg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a6d4b"/>
+      <stop offset="1" stop-color="#d6c09a"/>
+    </linearGradient>
+    <linearGradient id="velvet" x1="0" y1="1" x2=".35" y2="0">
+      <stop offset="0" stop-color="#5f2fae"/>
+      <stop offset=".62" stop-color="#7c45d0"/>
+      <stop offset="1" stop-color="#4f66d9"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#d8f6ff" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#7fdcff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#7fdcff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ground shadow -->
+  <ellipse cx="80" cy="121" rx="54" ry="7" fill="#2b1d10" opacity=".22"/>
+
+  <!-- spiky legs, knees up like the in-game mudcrab -->
+  <g class="ink" fill="url(#leg)">
+    <path d="M42 90 L22 88 L7 114 L26 99 L49 97 Z"/>
+    <path d="M50 96 L36 100 L27 122 L42 106 L57 101 Z"/>
+    <path d="M60 99 L52 108 L49 125 L59 111 L66 103 Z"/>
+    <path d="M118 90 L138 88 L153 114 L134 99 L111 97 Z"/>
+    <path d="M110 96 L124 100 L133 122 L118 106 L103 101 Z"/>
+    <path d="M100 99 L108 108 L111 125 L101 111 L94 103 Z"/>
+  </g>
+
+  <!-- little claw mitts peeking out front -->
+  <g class="ink" fill="#bfa37b">
+    <path d="M51 108 C49 100 58 96 65 100 C69 102 70 108 67 111 C62 115 53 115 51 108 Z"/>
+    <path d="M109 108 C111 100 102 96 95 100 C91 102 90 108 93 111 C98 115 107 115 109 108 Z"/>
+  </g>
+  <g fill="none" stroke="#2b1d10" stroke-width="1.4" stroke-linecap="round">
+    <path d="M55 103 C58 105 62 106 66 105"/>
+    <path d="M105 103 C102 105 98 106 94 105"/>
+  </g>
+
+  <!-- the boulder shell -->
+  <path class="ink" fill="url(#shell)" d="M33 91 C29 79 35 66 47 62 C51 52 63 47 73 51 C81 45 96 47 102 55 C114 55 125 65 125 78 C131 86 127 98 116 101 C103 106 57 106 44 102 C38 100 34 96 33 91 Z"/>
+  <g fill="none" stroke="#2b1d10" stroke-width="1.3" stroke-linecap="round" opacity=".5">
+    <path d="M49 70 C55 75 59 83 57 93"/>
+    <path d="M87 61 C92 68 100 71 111 71"/>
+    <path d="M68 86 C77 90 90 90 99 85"/>
+    <path d="M113 80 C116 86 115 92 110 96"/>
+    <path d="M40 84 C44 86 46 90 45 95"/>
+  </g>
+  <g fill="none" stroke="#c2a882" stroke-width="1.6" stroke-linecap="round" opacity=".7">
+    <path d="M52 60 C58 55 66 55 71 57"/>
+    <path d="M100 59 C106 59 112 62 115 66"/>
+    <path d="M40 72 C41 69 43 67 46 66"/>
+  </g>
+
+  <!-- eyes, peeking from under the shell lip -->
+  <path d="M60 101 C70 104 90 104 100 101 C92 106 68 106 60 101 Z" fill="#2b1d10" opacity=".55"/>
+  <g>
+    <circle cx="71" cy="99" r="4.6" fill="#f4ecd8" class="ink" stroke-width="1.3"/>
+    <circle cx="89" cy="99" r="4.6" fill="#f4ecd8" class="ink" stroke-width="1.3"/>
+    <circle cx="71.8" cy="99.6" r="2.5" fill="#1b120a"/>
+    <circle cx="89.8" cy="99.6" r="2.5" fill="#1b120a"/>
+    <circle cx="72.7" cy="98.6" r=".9" fill="#fff"/>
+    <circle cx="90.7" cy="98.6" r=".9" fill="#fff"/>
+  </g>
+
+  <!-- a little blush -->
+  <ellipse cx="63" cy="100" rx="4.2" ry="2.2" fill="#e08a72" opacity=".35"/>
+  <ellipse cx="97" cy="100" rx="4.2" ry="2.2" fill="#e08a72" opacity=".35"/>
+
+  <!-- purple velvet wizard hat -->
+  <ellipse class="ink" cx="83" cy="55" rx="27" ry="6.8" fill="#3d2270"/>
+  <path class="ink" fill="url(#velvet)" d="M65 54 C71 41 81 25 90 11 C93 27 97 41 101 54 C92 57 74 57 65 54 Z"/>
+  <path d="M76 48 C80 36 85 25 89 16" fill="none" stroke="#b994f0" stroke-width="2.2" stroke-linecap="round" opacity=".45"/>
+  <path class="ink" fill="#a67a2a" d="M67 49.5 C76 52.5 91 52.5 99.4 49.5 L101 54 C92 57 74 57 65 54 Z" stroke-width="1.3"/>
+  <rect x="80" y="50" width="7.5" height="5.6" rx=".8" fill="#e9c457" stroke="#5a3d10" stroke-width="1.1"/>
+  <rect x="82.3" y="51.8" width="2.9" height="2" fill="#a67a2a"/>
+
+  <!-- glowing sky-blue gem at the apex -->
+  <circle class="gem-glow" cx="90" cy="11" r="12" fill="url(#glow)"/>
+  <path d="M90 3.5 L94.6 10.5 L90 17.5 L85.4 10.5 Z" fill="#8fe2ff" stroke="#1f5b78" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M90 3.5 L94.6 10.5 L90 11.2 Z" fill="#d9f7ff" opacity=".8"/>
+  <path class="spark" d="M106 8 L107.2 11.4 L110.6 12.6 L107.2 13.8 L106 17.2 L104.8 13.8 L101.4 12.6 L104.8 11.4 Z" fill="#e9c457"/>
+  <path class="spark b" d="M73 20 L73.8 22.2 L76 23 L73.8 23.8 L73 26 L72.2 23.8 L70 23 L72.2 22.2 Z" fill="#e9c457"/>
+</svg>
