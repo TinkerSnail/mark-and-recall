@@ -1,3 +1,14 @@
+/* Morrowind's own book lettering, copied from your install by tools/make_textures.py.
+   It's a card-game font: * @ [ \ ] _ ` { | } hold mana symbols, so unicode-range keeps it to
+   letters, digits and plain punctuation. Everything else (those, curly quotes, ·, accents,
+   symbols) falls back to Crimson Pro. */
+@font-face {
+  font-family: "Magic Cards";
+  src: url("textures/fonts/magic-cards.ttf") format("truetype");
+  font-display: swap;
+  unicode-range: U+0020-0029, U+002B-003F, U+0041-005A, U+005E, U+0061-007A, U+007E;
+}
+
 /* Balmora Crossroads — two-guide lab.
    Textures are Morrowind's own (textures/, converted from the game + Intelligent Textures):
    parchment.jpg = journal page grain (Tx_menubook), scroll-*.webp = the reading scroll,
@@ -98,7 +109,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   color: var(--text);
-  font: 18px/1.55 "Crimson Pro", Georgia, "Times New Roman", serif;
+  font: 19px/1.6 "Magic Cards", "Crimson Pro", Georgia, "Times New Roman", serif;
   background-color: var(--bg);
   background-image: linear-gradient(var(--veil), var(--veil)), url("textures/fiber.jpg");
   background-size: auto, 300px;
@@ -117,9 +128,9 @@ button, select, input { font: inherit; color: inherit; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
 
 .label {
-  font-family: Cinzel, Georgia, serif;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
+  font-family: "Magic Cards", Cinzel, Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -144,7 +155,7 @@ button, select, input { font: inherit; color: inherit; }
 }
 .banner > *, .fork > * { position: relative; }
 .banner h1 {
-  font-family: Cinzel, Georgia, serif;
+  font-family: "Magic Cards", Cinzel, Georgia, serif;
   font-weight: 700;
   font-size: clamp(28px, 4.4vw, 46px);
   line-height: 1.1;
@@ -169,7 +180,7 @@ button, select, input { font: inherit; color: inherit; }
 }
 .gcard:nth-child(1) { transform: rotate(-0.35deg); }
 .gcard:nth-child(2) { transform: rotate(0.3deg); background-position: 0 0, 0 0, 190px 70px; }
-.gcard h2 { font-family: Cinzel, Georgia, serif; font-size: 18px; margin: 2px 0 2px; color: var(--c); }
+.gcard h2 { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 20px; margin: 2px 0 2px; color: var(--c); }
 .gcard p { margin: 0; font-size: 15.5px; color: var(--muted); }
 .gcard .lic { margin-top: 6px; font-size: 14px; color: var(--faint); font-style: italic; }
 .gcard a { color: inherit; }
@@ -231,14 +242,14 @@ button, select, input { font: inherit; color: inherit; }
 
 .colheads { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; margin: 26px 0 8px; }
 .colheads div { border-bottom: 2px solid var(--c); padding-bottom: 4px; }
-.colheads b { font-family: Cinzel, Georgia, serif; color: var(--c); font-size: 15px; letter-spacing: 0.06em; }
+.colheads b { font-family: "Magic Cards", Cinzel, Georgia, serif; color: var(--c); font-size: 16.5px; letter-spacing: 0.06em; }
 
 .row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; margin: 16px 0; scroll-margin-top: 120px; }
 .row:nth-child(3n) .card { background-position: 0 0, 0 0, 213px 97px; }
 .row:nth-child(3n+1) .card { background-position: 0 0, 0 0, 61px 301px; }
 
 .divider { margin: 36px 0 6px; display: flex; align-items: center; gap: 12px; }
-.divider span { font-family: Cinzel, Georgia, serif; color: var(--trim); font-size: 15px; letter-spacing: 0.06em; }
+.divider span { font-family: "Magic Cards", Cinzel, Georgia, serif; color: var(--trim); font-size: 16.5px; letter-spacing: 0.06em; }
 .divider::after {
   content: ""; flex: 1; height: 5px;
   background: url("textures/trim.png") repeat-x; background-size: auto 5px; opacity: 0.85;
@@ -249,7 +260,7 @@ button, select, input { font: inherit; color: inherit; }
   border-radius: 3px;
   padding: 14px 18px 12px;
 }
-.card h3 { font-family: Cinzel, Georgia, serif; font-size: 20px; line-height: 1.2; margin: 2px 0 8px; color: var(--ink-head); }
+.card h3 { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 22px; line-height: 1.2; margin: 2px 0 8px; color: var(--ink-head); }
 .card .prog { float: right; font-size: 14px; color: var(--muted); }
 .card .prog.full { color: var(--ok); }
 .card .label { color: var(--c); }
@@ -296,7 +307,7 @@ button, select, input { font: inherit; color: inherit; }
   padding: 10px 13px;
 }
 .mini .grp { font-size: 13.5px; color: var(--muted); }
-.mini h4 { font-family: Cinzel, Georgia, serif; font-size: 16px; margin: 2px 0 6px; color: var(--c); }
+.mini h4 { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 17.5px; margin: 2px 0 6px; color: var(--c); }
 .mini p { margin: 6px 0 0; font-size: 16.5px; }
 .mini .rep { font-size: 14px; color: var(--faint); font-style: italic; }
 .mini .chips { margin: 0; }
@@ -322,7 +333,7 @@ button, select, input { font: inherit; color: inherit; }
 }
 .fork .flag { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .fork .flag .label { color: var(--fork); }
-.fork h3 { font-family: Cinzel, Georgia, serif; font-size: 26px; margin: 4px 0 2px; color: var(--fork); }
+.fork h3 { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 29px; margin: 4px 0 2px; color: var(--fork); }
 .fork .qn { font-size: 20px; font-style: italic; margin: 0 0 8px; color: var(--ink-head); }
 .fork .why { margin: 0 0 8px; max-width: 860px; }
 .fork .where { font-size: 15.5px; color: var(--muted); margin: 0 0 12px; }
@@ -343,12 +354,12 @@ button, select, input { font: inherit; color: inherit; }
 }
 .branch.chosen { border-color: var(--fork); box-shadow: 0 0 0 1px var(--fork), inset 0 0 22px rgba(150, 47, 27, 0.14); }
 .branch.dim { opacity: 0.5; }
-.branch h4 { font-family: Cinzel, Georgia, serif; margin: 0; font-size: 17px; color: var(--ink-head); }
+.branch h4 { font-family: "Magic Cards", Cinzel, Georgia, serif; margin: 0; font-size: 19.5px; color: var(--ink-head); }
 .branch .cost { margin: 0; font-size: 16px; }
 .branch .keeps { margin: 0; font-size: 15.5px; color: var(--muted); }
 .stance { border-top: 1px dashed var(--border); padding-top: 6px; font-size: 15.5px; }
 .stance .who { font-weight: 600; color: var(--c); }
-.stance .verdict { font-family: Cinzel, Georgia, serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 4px; }
+.stance .verdict { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 4px; }
 .verdict.takes { color: var(--ok); }
 .verdict.avoids { color: var(--fork); }
 .verdict.documents { color: var(--gold); }
@@ -380,7 +391,7 @@ button, select, input { font: inherit; color: inherit; }
 details.only, details.how {
   margin: 28px 0; border-radius: 3px; padding: 10px 16px;
 }
-details summary { cursor: pointer; font-family: Cinzel, Georgia, serif; font-size: 16px; color: var(--ink-head); }
+details summary { cursor: pointer; font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 16px; color: var(--ink-head); }
 details.only ul { margin: 10px 0 4px; padding-left: 20px; columns: 2 280px; }
 details.only li { break-inside: avoid; font-size: 16px; }
 details.only li span { color: var(--faint); font-size: 14px; }
@@ -457,7 +468,8 @@ footer a { color: inherit; }
 }
 .tl-scroll svg { display: block; }
 .tl-scroll text { font-family: "Crimson Pro", Georgia, serif; fill: #2b1d10; }
-.tl-scroll .lane-name { font-family: Cinzel, Georgia, serif; font-size: 15px; font-weight: 700; }
+.tl-tip, .tl-table table { font-family: "Crimson Pro", Georgia, serif; }
+.tl-scroll .lane-name { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 15px; font-weight: 700; }
 .tl-scroll .lane-sub { font-size: 13.5px; fill: #5c4730; }
 .tl-scroll .lane-lead { font-size: 12.5px; fill: #5c4730; font-style: italic; }
 .tl-scroll .tick { font-size: 12.5px; fill: #3a2a18; }
@@ -488,15 +500,15 @@ footer a { color: inherit; }
   background: #f3ead2; color: #2b1d10; border: 1px solid rgba(80, 52, 20, .4); border-radius: 4px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, .3); padding: 8px 10px; font-size: 14.5px; line-height: 1.35;
 }
-.tl-tip .tt-title { font-family: Cinzel, Georgia, serif; font-weight: 700; font-size: 15px; }
+.tl-tip .tt-title { font-family: "Magic Cards", Cinzel, Georgia, serif; font-weight: 700; font-size: 15px; }
 .tl-tip .tt-sub { color: #5c4730; }
 .tl-tip .tt-fork { color: #962f1b; font-weight: 600; }
 
 details.tl-table { margin-top: 12px; }
-details.tl-table summary { font-family: Cinzel, Georgia, serif; font-size: 15px; color: var(--ink-head); cursor: pointer; }
+details.tl-table summary { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 15px; color: var(--ink-head); cursor: pointer; }
 .tl-table table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 15px; }
 .tl-table th, .tl-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.tl-table th { font-family: Cinzel, Georgia, serif; font-size: 12.5px; letter-spacing: .06em; color: var(--muted); }
+.tl-table th { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 12.5px; letter-spacing: .06em; color: var(--muted); }
 .tl-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .tl-table .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
 @media (max-width: 820px) { .tl-table { overflow-x: auto; } }
@@ -510,7 +522,7 @@ details.tl-table summary { font-family: Cinzel, Georgia, serif; font-size: 15px;
   background: linear-gradient(to right, rgba(230, 218, 185, 0.98) 88%, rgba(230, 218, 185, 0));
 }
 .tl-lanes .lane { position: absolute; left: 10px; right: 8px; line-height: 1.25; }
-.tl-lanes .lane-name { font-family: Cinzel, Georgia, serif; font-size: 15px; font-weight: 700; color: #2b1d10; display: flex; align-items: center; gap: 8px; }
+.tl-lanes .lane-name { font-family: "Magic Cards", Cinzel, Georgia, serif; font-size: 15px; font-weight: 700; color: #2b1d10; display: flex; align-items: center; gap: 8px; }
 .tl-lanes .lane-name i { display: inline-block; width: 22px; height: 8px; border-radius: 2px; flex: none; }
 .tl-lanes .lane-sub { font-size: 13.5px; color: #5c4730; margin-top: 2px; }
 .tl-lanes .lane-lead { font-size: 12.5px; color: #5c4730; font-style: italic; }

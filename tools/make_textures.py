@@ -22,6 +22,7 @@ SEARCH = [
     f"{MW}/extracted/Data Files/Textures",
 ]
 PINCHY_SHOT = f"{MW}/morrowmods/PetMudcrab/docs/pinchy.png"
+BOOK_FONT = f"{MW}/extracted/Data Files/BookArt/Magic Cards.ttf"  # Morrowind's book lettering (Neale Davidson, 1998)
 OUT = os.path.join(ROOT, "textures")
 INK = (36, 24, 16)
 # Dunmer town banners whose brush glyphs read best once lifted off the cloth
@@ -150,6 +151,10 @@ def velothi_glyph():
 
 def main():
     os.makedirs(f"{OUT}/glyphs", exist_ok=True)
+    os.makedirs(f"{OUT}/fonts", exist_ok=True)
+    if os.path.exists(BOOK_FONT):
+        with open(BOOK_FONT, "rb") as src, open(f"{OUT}/fonts/magic-cards.ttf", "wb") as dst:
+            dst.write(src.read())
     parchment()
     for town in GLYPH_TOWNS:
         glyph_column(town)
@@ -165,7 +170,7 @@ def main():
         shot = Image.open(PINCHY_SHOT).convert("RGB").crop((330, 130, 1030, 800))  # Pinchy and her Telvanni
         shot.resize((420, round(420 * shot.height / shot.width)), Image.LANCZOS).save(
             f"{OUT}/pinchy-field.jpg", quality=84, optimize=True)
-    for d in (OUT, f"{OUT}/glyphs"):
+    for d in (OUT, f"{OUT}/glyphs", f"{OUT}/fonts"):
         for f in sorted(os.listdir(d)):
             if os.path.isfile(os.path.join(d, f)):
                 print(f"{os.path.relpath(os.path.join(d, f), OUT):28} {os.path.getsize(os.path.join(d, f)) // 1024:5} KB")
