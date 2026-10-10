@@ -96,7 +96,7 @@
     document.getElementById('top').innerHTML = `
       <div class="banner">
         <img class="pinchy" src="pinchy.svg" alt="Pinchy the mudcrab in her purple velvet wizard hat" title="Pinchy, lab assistant">
-        <div class="label">Mark &amp; Recall’s Magical Guide to Morrowind · experiment 01</div>
+        <div class="label">Mark &amp; Recall: An Omni Guide to Morrowind · experiment 01</div>
         <h1>Two Guides Walk Into Balmora</h1>
         <p class="dek">tarvis79 walks Balmora building by building. Karpah walks it guild by guild.
           Neither knows the other exists. The game's own list of people and places introduces them,
