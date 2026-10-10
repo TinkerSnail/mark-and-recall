@@ -381,11 +381,13 @@
     const Y = both ? { tarvis: 150, karpah: 330 } : showSel === 'tarvis' ? { tarvis: 150 } : { karpah: 84 };
     const SVGH = both ? 530 : showSel === 'tarvis' ? 300 : 290;
 
-    // lay each lane out across the full plot width, proportional to text length
+    // lay each lane out across the full plot width: one equal block per stop/quest,
+    // or (Size: by words) each block as wide as the guide's text about it
+    const byWords = S.tlSize === 'words';
     const pos = {};
     for (const g of shown) {
       const us = lanes[g];
-      const len = us.map(u => Math.max(40, u.steps.join(' ').length));
+      const len = byWords ? us.map(u => Math.max(40, u.steps.join(' ').length)) : us.map(() => 1);
       const gaps = us.map((u, i) => (i === 0 ? 0 : g === 'karpah' && u.section !== us[i - 1].section ? 8 : 2));
       const k = (plotW - gaps.reduce((a, b) => a + b, 0)) / len.reduce((a, b) => a + b, 0);
       let x = L;
@@ -532,13 +534,17 @@
         <td>${done ? 'Done' : cov ? 'Covered' : '—'}</td></tr>`;
     }).join('')).join('');
 
+    const blocks = byWords
+      ? ' Block widths show how many words the guide spends on each one, so the long blocks are where it lingers.'
+      : '';
     const dek = both
-      ? `Each strip is one guide in its own reading order, and each piece is as wide as the
-         guide's write-up of it. Lines join pieces about the same people and places, so <b>where lines
-         cross, the guides cover the same ground in a different order</b>. You're following ${leadName};
-         the hollow pin is the matching spot in ${othName}.`
-      : `${esc(G[showSel].name)} on its own, in reading order. Each piece is as wide as the guide's
-         write-up of it. Show both guides to see how it lines up with ${esc(G[other(showSel)].name)}.`;
+      ? `Each strip is one guide, read left to right. Each block is one stop (tarvis79) or one quest (Karpah).${blocks}
+         Lines join blocks about the same people and places, so <b>where lines cross, the guides cover the
+         same ground in a different order</b>. You're following ${leadName}; the hollow pin is the matching
+         spot in ${othName}.`
+      : `${esc(G[showSel].name)} on its own, read left to right, one block per ${showSel === 'tarvis' ? 'stop' : 'quest'}.${blocks}
+         Show both guides to see how it lines up with ${esc(G[other(showSel)].name)}.`;
+    const sbtn = (v, text) => `<button data-act="tlsize" data-v="${v}" aria-pressed="${(S.tlSize === 'words') === (v === 'words')}">${text}</button>`;
     const fbtn = (v, text, c) => `<button data-act="tlshow" data-v="${v}" style="--c: ${c}" aria-pressed="${showSel === v}">${text}</button>`;
 
     app.innerHTML = `
@@ -551,13 +557,15 @@
           <span class="seg" role="group" aria-label="Show">
             ${fbtn('both', 'Both guides', 'var(--trim)')}${fbtn('tarvis', 'tarvis79', TL.tarvis)}${fbtn('karpah', 'Karpah', TL.karpah)}
           </span>
+          <span class="label">Size</span>
+          <span class="seg" role="group" aria-label="Block size">${sbtn('equal', 'Equal')}${sbtn('words', 'By words')}</span>
           <span class="label">Zoom</span>
           <span class="seg zoom" role="group" aria-label="Zoom">
             <button data-act="tlzoom" data-z="out" aria-label="Zoom out" ${zoom <= 1 ? 'disabled' : ''}>−</button>
             <button data-act="tlzoom" data-z="fit" aria-label="Fit to width">${zoom === 1 ? 'Fit' : `${+zoom.toFixed(2)}×`}</button>
             <button data-act="tlzoom" data-z="in" aria-label="Zoom in" ${zoom >= 8 ? 'disabled' : ''}>+</button>
           </span>
-          <span class="tl-hint">or pinch / ⌘-scroll on the chart${zoom < 2 ? ' · zoom to 2× to name every quest' : ''}</span>
+          <span class="tl-hint">or pinch / ⌘-scroll on the chart${zoom < 2 ? ' · 2× names every quest' : ''}</span>
         </div>
         <div class="tl-legend" aria-hidden="true">
           ${shown.includes('tarvis') ? `<span><i class="key sw" style="background:${TL.tarvis}"></i>tarvis79</span>` : ''}
@@ -711,6 +719,7 @@
     if (!el) return;
     const a = el.dataset.act;
     if (a === 'tlshow') { S.tlShow = el.dataset.v; save(); renderMain(); }
+    else if (a === 'tlsize') { S.tlSize = el.dataset.v; save(); renderMain(); }
     else if (a === 'tlzoom') {
       const z = +S.tlZoom || 1;
       setZoom(el.dataset.z === 'in' ? z * 1.5 : el.dataset.z === 'out' ? z / 1.5 : 1);

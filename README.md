@@ -40,8 +40,8 @@ git"), so run the four rebuild steps below once first.
 3. **Forking a playthrough** copies your progress into a branch that has made the
    choice. NPCs who die on your road get a ☠, and NPCs who might die get a ☠?.
 4. **The Timeline tab** draws both guides as written: one strip per guide in its
-   own reading order, each piece as wide as the guide's write-up of it, with
-   lines joining pieces about the same people and places (crossings are the
+   own reading order, one block per stop or quest (or sized by how many words the
+   guide spends on each), with lines joining blocks about the same people and places (crossings are the
    same ground in a different order). Fork gates, where each fork is decided, a
    "you are here" pin on both strips, a guide filter, zoom (buttons, pinch or
    ⌘/Ctrl-scroll, with every quest named from 2× up) and a table view.
